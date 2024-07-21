@@ -11,6 +11,23 @@ function App() {
     const [showCamera, setShowCamera] = useState(false);
     const [orientation, setOrientation] = useState('portrait');
 
+    // Function to check and update orientation
+    const checkOrientation = () => {
+        if (webcamRef.current && webcamRef.current.video.readyState === 4) {
+            const video = webcamRef.current.video;
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
+
+            if (videoWidth > videoHeight) {
+                setOrientation('landscape');
+                setShowCamera(true);
+            } else {
+                setOrientation('portrait');
+                setShowCamera(false);
+            }
+        }
+    };
+
     const runFacemesh = async () => {
         const net = await facemesh.load({
             inputResolution: { width: 640, height: 480 },
@@ -23,6 +40,8 @@ function App() {
 
     const detectFacemesh = async (net) => {
         if (webcamRef.current && webcamRef.current.video.readyState === 4) {
+            checkOrientation(); // Update orientation and camera visibility
+
             const video = webcamRef.current.video;
             const videoWidth = webcamRef.current.video.videoWidth;
             const videoHeight = webcamRef.current.video.videoHeight;
@@ -38,47 +57,20 @@ function App() {
             const ctx = canvasRef.current.getContext('2d');
             drawMesh(faces, ctx);
 
-            // Show loader until a face is detected
             if (faces.length > 0) {
                 setLoading(false);
             }
         }
     };
 
-    const handleOrientationChange = () => {
-        // Check the current orientation
-        if (webcamRef.current && webcamRef.current.video.readyState === 4) {
-            const video = webcamRef.current.video;
-            const videoWidth = video.videoWidth;
-            const videoHeight = video.videoHeight;
-
-            if (videoWidth > videoHeight) {
-                setOrientation('landscape');
-            } else {
-                setOrientation('portrait');
-            }
-
-            // Check if the orientation is correct
-            if (orientation === 'landscape') {
-                setShowCamera(true); // Show the camera if the orientation is landscape
-                setLoading(true); // Reset loading state to detect face again
-                runFacemesh(); // Restart facemesh detection
-            } else {
-                setShowCamera(false); // Hide the camera if the orientation is portrait
-                setLoading(true); // Show message to rotate the phone
-            }
-        }
-    };
-
     useEffect(() => {
-        // Initial orientation check
-        handleOrientationChange();
-        // Add event listener for orientation change
-        window.addEventListener('resize', handleOrientationChange);
-        window.addEventListener('orientationchange', handleOrientationChange);
+        runFacemesh();
+        checkOrientation(); // Initial orientation check
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
         return () => {
-            window.removeEventListener('resize', handleOrientationChange);
-            window.removeEventListener('orientationchange', handleOrientationChange);
+            window.removeEventListener('resize', checkOrientation);
+            window.removeEventListener('orientationchange', checkOrientation);
         };
     }, [orientation]);
 
@@ -101,29 +93,5 @@ function App() {
                             right: 0,
                             textAlign: 'center',
                             zIndex: 9,
-                            width: 640,
-                            height: 480,
-                        }}
-                        onUserMediaError={() => setLoading(true)} // Handle webcam error
-                    />
-                    <canvas
-                        ref={canvasRef}
-                        style={{
-                            position: 'absolute',
-                            marginLeft: 'auto',
-                            marginRight: 'auto',
-                            left: 0,
-                            right: 0,
-                            textAlign: 'center',
-                            zIndex: 10,
-                            width: 640,
-                            height: 480,
-                        }}
-                    />
-                </>
-            )}
-        </div>
-    );
-}
-
-export default App;
+                            width: '66.67%',  // 2/3 of the viewport width
+                            height: '66.67%', // 2/3 of the
