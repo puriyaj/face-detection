@@ -18,6 +18,7 @@ function App() {
             const videoWidth = video.videoWidth;
             const videoHeight = video.videoHeight;
 
+            // Determine orientation based on video dimensions
             if (videoWidth > videoHeight) {
                 setOrientation('landscape');
                 setShowCamera(true);
@@ -64,15 +65,31 @@ function App() {
     };
 
     useEffect(() => {
+        // Initialize Facemesh
         runFacemesh();
-        checkOrientation(); // Initial orientation check
-        window.addEventListener('resize', checkOrientation);
-        window.addEventListener('orientationchange', checkOrientation);
-        return () => {
-            window.removeEventListener('resize', checkOrientation);
-            window.removeEventListener('orientationchange', checkOrientation);
+
+        // Check orientation on initial render
+        checkOrientation();
+
+        // Set up matchMedia for orientation changes
+        const mediaQueryList = window.matchMedia('(orientation: landscape)');
+        const handleOrientationChange = (event) => {
+            if (event.matches) {
+                setOrientation('landscape');
+                setShowCamera(true);
+            } else {
+                setOrientation('portrait');
+                setShowCamera(false);
+            }
         };
-    }, [orientation]);
+
+        // Listen for changes
+        mediaQueryList.addEventListener('change', handleOrientationChange);
+
+        return () => {
+            mediaQueryList.removeEventListener('change', handleOrientationChange);
+        };
+    }, []);
 
     return (
         <div className="bg-gray-800" style={{ position: 'relative', width: '100vw', height: '100vh' }}>
