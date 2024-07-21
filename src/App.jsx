@@ -1,8 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
 import './App.css';
-import * as tf from '@tensorflow/tfjs';
 import * as facemesh from '@tensorflow-models/facemesh';
 import Webcam from 'react-webcam';
 import { drawMesh } from './utilities/utilities.js';
@@ -39,7 +36,6 @@ function App() {
             const ctx = canvasRef.current.getContext('2d');
             drawMesh(faces, ctx);
 
-            // Show loader until a face is detected
             if (faces.length > 0) {
                 setLoading(false);
             }
@@ -51,39 +47,19 @@ function App() {
     }, []);
 
     return (
-        <div className="bg-gray-800">
+        <div className="bg-gray-800 relative">
             {loading && (
-                <div className="loader ">
-                    <p className='text-gray-900'>Detecting your face ...</p>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xl font-bold z-10">
+                    <p>Loading...</p>
                 </div>
             )}
             <Webcam
                 ref={webcamRef}
-                style={{
-                    position: 'absolute',
-                    marginLeft: 'auto',
-                    marginRight: 'auto',
-                    left: 0,
-                    right: 0,
-                    textAlign: 'center',
-                    zIndex: 9,
-                    width: 640,
-                    height: 480,
-                }}
+                className="absolute inset-0 mx-auto w-full h-auto z-9"
             />
             <canvas
                 ref={canvasRef}
-                style={{
-                    position: 'absolute',
-                    marginLeft: 'auto',
-                    marginRight: 'auto',
-                    left: 0,
-                    right: 0,
-                    textAlign: 'center',
-                    zIndex: 9,
-                    width: 640,
-                    height: 480,
-                }}
+                className="absolute inset-0 mx-auto w-full h-auto z-9"
             />
         </div>
     );
