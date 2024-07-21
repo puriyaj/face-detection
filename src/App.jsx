@@ -1,79 +1,92 @@
-import {useRef, useState} from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import * as tf from '@tensorflow/tfjs'
-import * as facemesh from '@tensorflow-models/facemesh'
-import Webcam from 'react-webcam'
-import {drawMesh} from "./utilities/utilities.js";
+import { useRef, useState, useEffect } from 'react';
+import reactLogo from './assets/react.svg';
+import viteLogo from '/vite.svg';
+import './App.css';
+import * as tf from '@tensorflow/tfjs';
+import * as facemesh from '@tensorflow-models/facemesh';
+import Webcam from 'react-webcam';
+import { drawMesh } from './utilities/utilities.js';
 
 function App() {
-  const webcamRef = useRef(null)
-    const canvasRef = useRef(null)
+    const webcamRef = useRef(null);
+    const canvasRef = useRef(null);
+    const [loading, setLoading] = useState(true);
 
+    const runFacemesh = async () => {
+        const net = await facemesh.load({
+            inputResolution: { width: 640, height: 480 },
+            scale: 0.8,
+        });
+        setInterval(() => {
+            detectFacemesh(net);
+        }, 100);
+    };
 
-  const runFacemesh = async () => {
-    const net = await facemesh.load({
-      inputResolution:{width: 640, height: 480},scale:0.8
-    })
-    setInterval(() => {
-      detectFacemesh(net)
-    },100)
-  }
+    const detectFacemesh = async (net) => {
+        if (webcamRef.current && webcamRef.current.video.readyState === 4) {
+            const video = webcamRef.current.video;
+            const videoWidth = webcamRef.current.video.videoWidth;
+            const videoHeight = webcamRef.current.video.videoHeight;
 
-  const detectFacemesh = async (net) => {
-    if(typeof webcamRef.current !== 'undefined' && webcamRef.current !== null && webcamRef.current.video.readyState == 4) {
-      const video = webcamRef.current.video
-      const videoWidth = webcamRef.current.video.videoWidth
-      const videoHeight = webcamRef.current.video.videoHeight
+            webcamRef.current.video.width = videoWidth;
+            webcamRef.current.video.height = videoHeight;
 
-      webcamRef.current.video.width = videoWidth
-      webcamRef.current.video.height = videoHeight
+            canvasRef.current.width = videoWidth;
+            canvasRef.current.height = videoHeight;
 
-      canvasRef.current.width = videoWidth
-      canvasRef.current.height = videoHeight
+            const faces = await net.estimateFaces(video);
 
-      const face = await net.estimateFaces(video)
+            const ctx = canvasRef.current.getContext('2d');
+            drawMesh(faces, ctx);
 
-      const ctx = canvasRef.current.getContext('2d')
-      drawMesh(face, ctx)
-    }
-  }
-  runFacemesh()
-  return (
-    <>
-      <Webcam
-          ref={webcamRef}
-          style={{
-            position: "absolute",
-            marginLeft: "auto",
-            marginRight: "auto",
-            left: 0,
-            right: 0,
-            textAlign: "center",
-            zindex: 9,
-            width: 640,
-            height: 480,
-          }}
-      />
+            // Show loader until a face is detected
+            if (faces.length > 0) {
+                setLoading(false);
+            }
+        }
+    };
 
-      <canvas
-          ref={canvasRef}
-          style={{
-            position: "absolute",
-            marginLeft: "auto",
-            marginRight: "auto",
-            left: 0,
-            right: 0,
-            textAlign: "center",
-            zindex: 9,
-            width: 640,
-            height: 480,
-          }}
-      />
+    useEffect(() => {
+        runFacemesh();
+    }, []);
 
-    </>
-  )
+    return (
+        <div className="bg-gray-800">
+            {loading && (
+                <div className="loader ">
+                    <p className='text-gray-900'>Detecting your face ...</p>
+                </div>
+            )}
+            <Webcam
+                ref={webcamRef}
+                style={{
+                    position: 'absolute',
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                    left: 0,
+                    right: 0,
+                    textAlign: 'center',
+                    zIndex: 9,
+                    width: 640,
+                    height: 480,
+                }}
+            />
+            <canvas
+                ref={canvasRef}
+                style={{
+                    position: 'absolute',
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                    left: 0,
+                    right: 0,
+                    textAlign: 'center',
+                    zIndex: 9,
+                    width: 640,
+                    height: 480,
+                }}
+            />
+        </div>
+    );
 }
 
-export default App
+export default App;
