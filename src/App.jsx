@@ -1,16 +1,15 @@
 import { useRef, useState, useEffect } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
-import * as tf from '@tensorflow/tfjs';
 import * as facemesh from '@tensorflow-models/facemesh';
 import Webcam from 'react-webcam';
 import { drawMesh } from './utilities/utilities.js';
+import './App.css';
 
 function App() {
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
     const [loading, setLoading] = useState(true);
+    const [showCamera, setShowCamera] = useState(false);
+    const [orientation, setOrientation] = useState('portrait');
 
     const runFacemesh = async () => {
         const net = await facemesh.load({
@@ -46,46 +45,83 @@ function App() {
         }
     };
 
+    const handleOrientationChange = () => {
+        // Check the current orientation
+        if (webcamRef.current && webcamRef.current.video.readyState === 4) {
+            const video = webcamRef.current.video;
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
+
+            if (videoWidth > videoHeight) {
+                setOrientation('landscape');
+            } else {
+                setOrientation('portrait');
+            }
+
+            // Check if the orientation is correct
+            if (orientation === 'landscape') {
+                setShowCamera(true); // Show the camera if the orientation is landscape
+                setLoading(true); // Reset loading state to detect face again
+                runFacemesh(); // Restart facemesh detection
+            } else {
+                setShowCamera(false); // Hide the camera if the orientation is portrait
+                setLoading(true); // Show message to rotate the phone
+            }
+        }
+    };
+
     useEffect(() => {
-        runFacemesh();
-    }, []);
+        // Initial orientation check
+        handleOrientationChange();
+        // Add event listener for orientation change
+        window.addEventListener('resize', handleOrientationChange);
+        window.addEventListener('orientationchange', handleOrientationChange);
+        return () => {
+            window.removeEventListener('resize', handleOrientationChange);
+            window.removeEventListener('orientationchange', handleOrientationChange);
+        };
+    }, [orientation]);
 
     return (
-        <div className="bg-gray-800">
-            {loading && (
-                <div className="loader ">
-                    <p className='text-gray-900'>Detecting your face ...</p>
+        <div className="bg-gray-800" style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+            {loading && !showCamera && (
+                <div className="loader">
+                    <p className='text-gray-900'>Please rotate your phone to landscape mode.</p>
                 </div>
             )}
-            <Webcam
-                ref={webcamRef}
-                style={{
-                    position: 'absolute',
-                    marginLeft: 'auto',
-                    marginRight: 'auto',
-                    left: 0,
-                    right: 0,
-                    textAlign: 'center',
-                    zIndex: 9,
-                    width: 640,
-                    height: 480,
-                }}
-            />
-            <canvas
-                ref={canvasRef}
-                style={{
-                    position: 'absolute',
-                    marginLeft: 'auto',
-                    marginRight: 'auto',
-                    left: 0,
-                    right: 0,
-                    textAlign: 'center',
-                    zIndex: 9,
-                    width: 640,
-                    height: 480,
-                    scale:0.8
-                }}
-            />
+            {showCamera && (
+                <>
+                    <Webcam
+                        ref={webcamRef}
+                        style={{
+                            position: 'absolute',
+                            marginLeft: 'auto',
+                            marginRight: 'auto',
+                            left: 0,
+                            right: 0,
+                            textAlign: 'center',
+                            zIndex: 9,
+                            width: 640,
+                            height: 480,
+                        }}
+                        onUserMediaError={() => setLoading(true)} // Handle webcam error
+                    />
+                    <canvas
+                        ref={canvasRef}
+                        style={{
+                            position: 'absolute',
+                            marginLeft: 'auto',
+                            marginRight: 'auto',
+                            left: 0,
+                            right: 0,
+                            textAlign: 'center',
+                            zIndex: 10,
+                            width: 640,
+                            height: 480,
+                        }}
+                    />
+                </>
+            )}
         </div>
     );
 }
