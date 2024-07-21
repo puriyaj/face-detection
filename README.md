@@ -17,12 +17,7 @@ This project is a web application built with React, Vite, and TensorFlow.js that
 - **Vite**: A fast build tool and development server
 - **TensorFlow.js**: A library for machine learning in JavaScript
 
-## Getting Started
 
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (version 14 or higher)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 
 
 
