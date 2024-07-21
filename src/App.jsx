@@ -110,8 +110,8 @@ function App() {
                             right: 0,
                             textAlign: 'center',
                             zIndex: 9,
-                            width: '66.67%',  // 2/3 of the viewport width
-                            height: '66.67%', // 2/3 of the viewport height
+                            width: 640,  // 2/3 of the viewport width
+                            height: 480, // 2/3 of the viewport height
                         }}
                         onUserMediaError={() => setLoading(true)}
                     />
@@ -125,8 +125,8 @@ function App() {
                             right: 0,
                             textAlign: 'center',
                             zIndex: 10,
-                            width: '66.67%',  // 2/3 of the viewport width
-                            height: '66.67%', // 2/3 of the viewport height
+                            width: 640,  // 2/3 of the viewport width
+                            height: 480, // 2/3 of the viewport height
                         }}
                     />
                 </>
