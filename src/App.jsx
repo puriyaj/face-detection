@@ -14,7 +14,7 @@ function App() {
 
     const runFacemesh = async () => {
         const net = await facemesh.load({
-            inputResolution: { width: 200, height: 200 },
+            inputResolution: { width: 100, height: 100 },
             scale: 0.8,
         });
         setInterval(() => {
@@ -67,8 +67,8 @@ function App() {
                     right: 0,
                     textAlign: 'center',
                     zIndex: 9,
-                    width: 200,
-                    height: 200,
+                    width: 100,
+                    height: 100,
                 }}
             />
             <canvas
@@ -81,8 +81,8 @@ function App() {
                     right: 0,
                     textAlign: 'center',
                     zIndex: 9,
-                    width: 200,
-                    height: 200,
+                    width: 100,
+                    height: 100,
                 }}
             />
         </div>
