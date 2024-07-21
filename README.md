@@ -1,8 +1,24 @@
-# React + Vite
+# Face Detection with React, Vite, and TensorFlow.js
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Project Overview
 
-Currently, two official plugins are available:
+This project is a web application built with React, Vite, and TensorFlow.js that performs real-time face detection. Leveraging the power of TensorFlow.js, this app demonstrates how to integrate machine learning models into a React application to detect faces in images or live video feeds.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
+
+- Real-time face detection using TensorFlow.js
+- Easy integration with React and Vite
+- Live video feed processing
+- Minimal setup and configuration
+
+## Technologies
+
+- **React**: A JavaScript library for building user interfaces
+- **Vite**: A fast build tool and development server
+- **TensorFlow.js**: A library for machine learning in JavaScript
+
+
+
+
+
+
