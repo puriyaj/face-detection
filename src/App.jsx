@@ -92,7 +92,7 @@ function App() {
     }, []);
 
     return (
-        <div className="bg-gray-800" style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+        <div className="bg-gray-600" style={{ position: 'relative', width: '100vw', height: '100vh' }}>
             {loading && !showCamera && (
                 <div className="loader">
                     <p className='text-gray-900'>Please rotate your phone to landscape mode.</p>
