@@ -11,24 +11,6 @@ function App() {
     const [showCamera, setShowCamera] = useState(false);
     const [orientation, setOrientation] = useState('portrait');
 
-    // Function to check and update orientation
-    const checkOrientation = () => {
-        if (webcamRef.current && webcamRef.current.video.readyState === 4) {
-            const video = webcamRef.current.video;
-            const videoWidth = video.videoWidth;
-            const videoHeight = video.videoHeight;
-
-            // Determine orientation based on video dimensions
-            if (videoWidth > videoHeight) {
-                setOrientation('landscape');
-                setShowCamera(true);
-            } else {
-                setOrientation('portrait');
-                setShowCamera(false);
-            }
-        }
-    };
-
     const runFacemesh = async () => {
         const net = await facemesh.load({
             inputResolution: { width: 640, height: 480 },
@@ -41,8 +23,6 @@ function App() {
 
     const detectFacemesh = async (net) => {
         if (webcamRef.current && webcamRef.current.video.readyState === 4) {
-            checkOrientation(); // Update orientation and camera visibility
-
             const video = webcamRef.current.video;
             const videoWidth = webcamRef.current.video.videoWidth;
             const videoHeight = webcamRef.current.video.videoHeight;
@@ -58,41 +38,52 @@ function App() {
             const ctx = canvasRef.current.getContext('2d');
             drawMesh(faces, ctx);
 
+            // Show loader until a face is detected
             if (faces.length > 0) {
                 setLoading(false);
             }
         }
     };
 
-    useEffect(() => {
-        // Initialize Facemesh
-        runFacemesh();
+    const handleOrientationChange = () => {
+        // Check the current orientation
+        if (webcamRef.current && webcamRef.current.video.readyState === 4) {
+            const video = webcamRef.current.video;
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
 
-        // Check orientation on initial render
-        checkOrientation();
-
-        // Set up matchMedia for orientation changes
-        const mediaQueryList = window.matchMedia('(orientation: landscape)');
-        const handleOrientationChange = (event) => {
-            if (event.matches) {
+            if (videoWidth > videoHeight) {
                 setOrientation('landscape');
-                setShowCamera(true);
             } else {
                 setOrientation('portrait');
-                setShowCamera(false);
             }
-        };
 
-        // Listen for changes
-        mediaQueryList.addEventListener('change', handleOrientationChange);
+            // Check if the orientation is correct
+            if (orientation === 'landscape') {
+                setShowCamera(true); // Show the camera if the orientation is landscape
+                setLoading(true); // Reset loading state to detect face again
+                runFacemesh(); // Restart facemesh detection
+            } else {
+                setShowCamera(false); // Hide the camera if the orientation is portrait
+                setLoading(true); // Show message to rotate the phone
+            }
+        }
+    };
 
+    useEffect(() => {
+        // Initial orientation check
+        handleOrientationChange();
+        // Add event listener for orientation change
+        window.addEventListener('resize', handleOrientationChange);
+        window.addEventListener('orientationchange', handleOrientationChange);
         return () => {
-            mediaQueryList.removeEventListener('change', handleOrientationChange);
+            window.removeEventListener('resize', handleOrientationChange);
+            window.removeEventListener('orientationchange', handleOrientationChange);
         };
-    }, []);
+    }, [orientation]);
 
     return (
-        <div >
+        <div className="bg-gray-800" style={{ position: 'relative', width: '100vw', height: '100vh' }}>
             {loading && !showCamera && (
                 <div className="loader">
                     <p className='text-gray-900'>Please rotate your phone to landscape mode.</p>
@@ -110,10 +101,10 @@ function App() {
                             right: 0,
                             textAlign: 'center',
                             zIndex: 9,
-                            width: 640,  // 2/3 of the viewport width
-                            height: 480, // 2/3 of the viewport height
+                            width: 640,
+                            height: 480,
                         }}
-                        onUserMediaError={() => setLoading(true)}
+                        onUserMediaError={() => setLoading(true)} // Handle webcam error
                     />
                     <canvas
                         ref={canvasRef}
@@ -125,8 +116,8 @@ function App() {
                             right: 0,
                             textAlign: 'center',
                             zIndex: 10,
-                            width: 640,  // 2/3 of the viewport width
-                            height: 480, // 2/3 of the viewport height
+                            width: 640,
+                            height: 480,
                         }}
                     />
                 </>
